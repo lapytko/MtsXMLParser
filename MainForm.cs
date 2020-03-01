@@ -30,7 +30,17 @@ namespace MtsXMLParser
                 document.Load(openFileDialog.FileName);
                 XMLMethods methods = new XMLMethods(document);
                 calls = methods.GetCalls();
+                addItems();
             }
+        }
+
+        void addItems()
+        {
+            foreach (Call row in this.calls)
+            {
+                listBox1.Items.Add(row.number);
+            }
+            
         }
 
         private void выходToolStripMenuItem_Click(object sender, EventArgs e)
