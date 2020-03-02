@@ -13,7 +13,7 @@ namespace MtsXMLParser.Types
         public string provider;
         public string duration;
         public double cost;
-        public bool type=false;
+        public bool type = false;
 
         public Call(DateTime date, string number, string provider, string duration, double cost)
         {
@@ -24,13 +24,13 @@ namespace MtsXMLParser.Types
             if (number != null)
             {
                 this.type = SetCallType(number);
-                CorrectNumber();
+                CorrectNumber(number);
             }
             else
             {
                 this.number = "Номер не определён";
             }
-           
+
         }
 
         private bool SetCallType(string phone)
@@ -40,7 +40,7 @@ namespace MtsXMLParser.Types
                 string[] splited = phone.Split(':');
                 if (splited.Length > 1)
                 {
-                    this.number =splited[1];
+                    this.number = splited[1];
                     if (splited[0].Contains("<--"))
                     { return true; }
                 }
@@ -49,29 +49,77 @@ namespace MtsXMLParser.Types
                     this.number = splited[0];
                 }
             }
+            else
+            {
+                if (phone.Contains("<--"))
+                {
+                    int tmp = phone.IndexOf('-') + 1;
+                    string x = phone.Substring(tmp + 1);
+                    this.number = x;
+                    return true;
+                }
+            }
             return false;
         }
 
-        private void CorrectNumber()
+        string GetNumberFromString(string phone)
         {
-            if (this.number != null)
+            if (phone.Contains(":"))
             {
-                if (this.number[0].Equals("+"))
-                { return; }
+                string[] splited = phone.Split(':');
+                if (splited.Length > 1)
+                {
+                    return splited[1];
+                }
                 else
                 {
-                    string corrected = "+";
-                    corrected += number;
-                    this.number = corrected;
+                    return splited[0];
                 }
             }
             else
             {
-                this.number = "Номер не определён";
+                return phone;
             }
-
         }
 
-        
+        private void CorrectNumber(string number)
+        {
+            if (number != null)
+            {
+                string splitedN = GetNumberFromString(number);
+                if (splitedN[0] == '+')
+                {
+                    this.number = splitedN;
+                }
+                else
+                {
+                    if (splitedN.Contains("<--"))
+                    {
+                        int tmp = splitedN.IndexOf('-') + 1;
+                        string x = splitedN.Substring(tmp + 1);
+                        this.number = x;
+                        return;
+                    }
+                    else
+                    {
+                        string corrected = "+";
+                        corrected += splitedN;
+                        this.number = corrected;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Преобразует тип звонка в понятный для человека
+        /// </summary>
+        public string MakeTypeU()
+        {
+            if (this.type)
+                return "Входящий";
+            else
+                return "Исходящий";
+        }
+
     }
 }

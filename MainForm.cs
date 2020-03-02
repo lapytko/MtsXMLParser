@@ -115,8 +115,11 @@ namespace MtsXMLParser
         {
             DetailstextBox.Clear();
             DetailstextBox.Text+=($"Номер телефона: {input.number}\r\n");
+            DetailstextBox.Text += ($"Тип: {input.MakeTypeU()}\r\n");
+            DetailstextBox.Text += ($"Оператор: {input.provider}\r\n");
             DetailstextBox.Text += ($"Дата: {input.date}\r\n");
             DetailstextBox.Text += ($"Прожолжительность: {input.duration}\r\n");
+            DetailstextBox.Text += ($"Цена: {input.cost}\r\n");
             DetailstextBox.Refresh();
         }
 

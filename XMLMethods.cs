@@ -53,13 +53,26 @@ namespace MtsXMLParser
             return result;
         }
 
+        private int GetChildNumber(XmlNode node, string name)
+        {
+            int i = 0;
+            foreach (XmlNode row in node.ChildNodes)
+            {
+                if (row.Name == name)
+                    return i;
+                i++;
+            }
+
+            return i;
+        }
+
         private Call ComliteCall(XmlNode x)
         {
-             DateTime date = Convert.ToDateTime(x.ChildNodes[0].InnerText);
-             string phone = x.ChildNodes[1].InnerText;
-             string prov = x.ChildNodes[3].InnerText;
-             string duration = x.ChildNodes[6].InnerText;
-             double cost = Convert.ToDouble(x.ChildNodes[7].InnerText) ;
+             DateTime date = Convert.ToDateTime(x.ChildNodes[GetChildNumber(x, "d")].InnerText);
+             string phone = x.ChildNodes[GetChildNumber(x,"n")].InnerText;
+             string prov = x.ChildNodes[GetChildNumber(x, "zv")].InnerText;
+             string duration = x.ChildNodes[GetChildNumber(x, "du")].InnerText;
+             double cost = Convert.ToDouble(x.ChildNodes[GetChildNumber(x, "c")].InnerText) ;
 
              return  new Call(date,phone,prov,duration,cost);
         }
