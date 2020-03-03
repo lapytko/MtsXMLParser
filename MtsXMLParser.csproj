@@ -81,6 +81,9 @@
       <DependentUpon>SettingsForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Types\Call.cs" />
+    <Compile Include="Types\Internet.cs" />
+    <Compile Include="Types\Ext.cs" />
+    <Compile Include="Types\Sms.cs" />
     <Compile Include="Viber\ViberMethods.cs" />
     <Compile Include="Viber\ViberTokenForm.cs">
       <SubType>Form</SubType>

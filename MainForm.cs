@@ -14,9 +14,12 @@ namespace MtsXMLParser
 {
     public partial class MainForm : Form
     {
-        private XmlDocument document;
+        public static XmlDocument document;
         List<Call> calls = new List<Call>();
+        List<Sms> smsList = new List<Sms>();
         private List<History> historyCalls;
+        private List<History> historySms;
+        private Internet internet;
 
         public MainForm()
         {
@@ -29,28 +32,15 @@ namespace MtsXMLParser
             {
                 document= new XmlDocument();
                 document.Load(openFileDialog.FileName);
-                XMLMethods methods = new XMLMethods(document);
-                calls = methods.GetCalls();
-                addItems();
+                this.internet = new Internet();
+                calls = Call.GetCalls();
+                smsList = Sms.GetSms();
+                Call.addItems(listBox1,calls);
+                Internet.addItems(this.internet,InternettextBox);
                 listBox1.SelectedIndex = -1;
             }
         }
 
-        void addItems()
-        {
-            var removed = RemoveDublicate(this.calls);
-            foreach (string row in removed )
-            {
-                listBox1.Items.Add(row);
-            }
-            
-        }
-
-        private List<string> RemoveDublicate(List<Call> input)
-        {
-            var removed = input.Select(x => x.number).Distinct().ToList();
-            return removed;
-        }
         private void выходToolStripMenuItem_Click(object sender, EventArgs e)
         {
             string message = "Вы уверены, что хотите выйти ?";
@@ -69,65 +59,56 @@ namespace MtsXMLParser
 
         private void MainForm_SizeChanged(object sender, EventArgs e)
         {
+            tabPage1.Width = this.Width;
+            tableLayoutPanel1.Width = tabPage1.Width;
+            tableLayoutPanel1.Height = tabPage1.Height;
             
-            tableLayoutPanel1.Width = this.Width;
-            tableLayoutPanel1.Height = this.Height;
         }
-
-        private List<Call> FilterByNumber(List<Call> input, string number)
-        {
-            List<Call> filtered = input.Where(x => x.number == number).ToList();
-            return filtered;
-        }
-
-        private List<History> GenerateHistory(List<Call> input)
-        {
-            List<History> result = new List<History>();
-            foreach (Call row in input)
-            {
-             History tmp = new History(row);
-             result.Add(tmp);
-            }
-
-            return result;
-        }
-
-        void AddToHistory(List<History> input)
-        {
-            historyListBox.Items.Clear();
-            foreach (History row in input)
-            {
-                historyListBox.Items.Add(row.ToString());
-            }
-        }
-
+        
         private void listBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
             int selected = listBox1.SelectedIndex;
             string value = listBox1.Items[selected].ToString();
-            List<Call> HistoryByNumber = FilterByNumber(this.calls, value);
-             historyCalls= GenerateHistory(HistoryByNumber);
-            AddToHistory(historyCalls);
+            List<Call> HistoryByNumber = Call.FilterByNumber(this.calls, value);
+             historyCalls= History.GenerateHistory(HistoryByNumber);
+            History.AddCalls(historyCalls,historyListBox);
         }
-
-
-        private void SetDeDetails(Call input)
-        {
-            DetailstextBox.Clear();
-            DetailstextBox.Text+=($"Номер телефона: {input.number}\r\n");
-            DetailstextBox.Text += ($"Тип: {input.MakeTypeU()}\r\n");
-            DetailstextBox.Text += ($"Оператор: {input.provider}\r\n");
-            DetailstextBox.Text += ($"Дата: {input.date}\r\n");
-            DetailstextBox.Text += ($"Прожолжительность: {input.duration}\r\n");
-            DetailstextBox.Text += ($"Цена: {input.cost}\r\n");
-            DetailstextBox.Refresh();
-        }
-
+        
         private void historyListBox_SelectedIndexChanged(object sender, EventArgs e)
         {
             int selected = historyListBox.SelectedIndex;
             Call call = historyCalls[selected].call;
-            SetDeDetails(call);
+            Call.SetDeDetails(call,DetailstextBox);
+        }
+
+        private void tableLayoutPanel1_SizeChanged(object sender, EventArgs e)
+        {
+            DetailstextBox.Height = tableLayoutPanel1.Height - 20;
+        }
+        
+        private void typeListBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            List<Sms> filtered;
+            int selected = typeListBox.SelectedIndex;
+            string txt = typeListBox.Items[selected].ToString();
+            if (txt == "Входящие")
+            {
+                filtered = Sms.FilterSms(this.smsList, true);
+            }
+            else
+            {
+                filtered = Sms.FilterSms(this.smsList, false);
+            }
+            History.AddSms(filtered, ref this.historySms);
+            History.AddSms(this.historySms, smsHistoryList);
+        }
+
+
+        private void smsHistoryList_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            int selected = smsHistoryList.SelectedIndex;
+            Sms txt = this.historySms[selected].sms;
+            Sms.SetDeDetails(txt, smsDetaisTextBox);
         }
     }
 }

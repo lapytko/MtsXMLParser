@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms;
+using System.Xml;
 
 namespace MtsXMLParser.Types
 {
@@ -15,6 +17,7 @@ namespace MtsXMLParser.Types
         public double cost;
         public bool type = false;
 
+        public Call() { }
         public Call(DateTime date, string number, string provider, string duration, double cost)
         {
             this.date = date;
@@ -31,6 +34,84 @@ namespace MtsXMLParser.Types
                 this.number = "Номер не определён";
             }
 
+        }
+
+        private static List<string> RemoveDublicate(List<Call> input)
+        {
+            var removed = input.Select(x => x.number).Distinct().ToList();
+            return removed;
+        }
+
+        public static void SetDeDetails(Call input, TextBox txt)
+        {
+            txt.Clear();
+            txt.Text += ($"Номер телефона: {input.number}\r\n");
+            txt.Text += ($"Тип: {input.MakeTypeU()}\r\n");
+            txt.Text += ($"Оператор: {input.provider}\r\n");
+            txt.Text += ($"Дата: {input.date}\r\n");
+            txt.Text += ($"Прожолжительность: {input.duration}\r\n");
+            txt.Text += ($"Цена: {input.cost}\r\n");
+            txt.Refresh();
+        }
+
+        public static void addItems(ListBox destinition, List<Call> input)
+        {
+            var removed = RemoveDublicate(input);
+            foreach (string row in removed)
+            {
+                destinition.Items.Add(row);
+            }
+
+        }
+        public  static Call ComliteCall(XmlNode x)
+        {
+            DateTime date = Convert.ToDateTime(x.ChildNodes[XMLMethods.GetChildNumber(x, "d")].InnerText);
+            string phone = x.ChildNodes[XMLMethods.GetChildNumber(x, "n")].InnerText;
+            string prov = x.ChildNodes[XMLMethods.GetChildNumber(x, "zv")].InnerText;
+            string duration = x.ChildNodes[XMLMethods.GetChildNumber(x, "du")].InnerText;
+            double cost = Convert.ToDouble(x.ChildNodes[XMLMethods.GetChildNumber(x, "c")].InnerText);
+
+            return new Call(date, phone, prov, duration, cost);
+        }
+
+        public static List<Call> GetCalls()
+        {
+            var result = new List<Call>();
+            foreach (XmlNode repo in MainForm.document.SelectNodes("report"))
+            {
+                foreach (XmlElement td in repo.ChildNodes)
+                {
+                    if (td.Name == "td")
+                    {
+                        foreach (XmlNode tdc in td.ChildNodes)
+                        {
+
+                            if (tdc.Name == "c")
+                            {
+                                foreach (XmlNode c in tdc.ChildNodes)
+                                {
+                                    if ((c.Name == "s") && (c.InnerText == "телефония"))
+                                    {
+                                        XmlNode node = tdc;
+                                        result.Add(ComliteCall(node));
+                                    }
+                                }
+
+                            }
+
+                        }
+
+                    }
+
+                }
+            }
+            return result;
+        }
+
+        public static List<Call> FilterByNumber(List<Call> input, string number)
+        {
+            List<Call> filtered = input.Where(x => x.number == number).ToList();
+            return filtered;
         }
 
         private bool SetCallType(string phone)
@@ -62,7 +143,7 @@ namespace MtsXMLParser.Types
             return false;
         }
 
-        string GetNumberFromString(string phone)
+        private string GetNumberFromString(string phone)
         {
             if (phone.Contains(":"))
             {
