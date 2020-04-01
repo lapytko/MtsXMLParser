@@ -52,9 +52,7 @@ namespace MtsXMLParser
 
         private void настройкиToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            SettingsForm settingsForm = new SettingsForm();
-            if(settingsForm.ShowDialog(this) == DialogResult.OK)
-            { }
+         
         }
 
         private void MainForm_SizeChanged(object sender, EventArgs e)
