@@ -8,8 +8,6 @@ namespace MtsXMLParser
 {
     class Settings
     {
-        public string viberToken = "";
-        public string whatsAppToken = "";
-        public string name = "";
+        
     }
 }
